@@ -1,40 +1,51 @@
 package com.example.fileattachment.web;
 
-import java.io.File;
-import java.io.FileInputStream;
+
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.example.fileattachment.service.FileAttachmentService;
 
 @RestController
 public class FileAttachmentController {
+	 
+	@Autowired
+	private FileAttachmentService fileService;
 	
-	private byte[] byteArray; 
 	
-	@GetMapping("/downloadFile/{fileName}")
-	public void downloadFile(@PathVariable("fileName")String fileName,HttpServletResponse response) throws IOException {
+	@GetMapping("/downloadFile")
+	public void downloadFile(HttpServletResponse response) throws IOException {
+		OutputStream os = response.getOutputStream();
+		os.write(fileService.loadResourceDocument());
 		
-		File file = ResourceUtils.getFile("classpath:application.properties");
-		byteArray = new byte[(int) file.length()]; 
-
-		  FileInputStream fis = new FileInputStream(file);
-		  fis.read(byteArray); //read file into bytes[]
 		response.setContentType("application/octet-stream");
 		response.setStatus(200);
 		response.setHeader("Content-Disposition", "attachment; filename=\"demo.txt\"");
 		
-		OutputStream os = response.getOutputStream();
-		os.write(byteArray);
-		fis.close();
-		os.close();
-		
+		os.close();	
+	}
+	
+	@PostMapping("/uploadFile")
+	public String attachFileDocument(@RequestParam("file") MultipartFile file) throws IOException {
+		if(fileService.uploadDocument(file)) {
+			return "File successfully uploaded- "+file.getOriginalFilename();
+		}
+		else 
+			return "Unable to upload the attached file";
 	}
 
 }
