@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +23,9 @@ import com.example.fileattachment.service.FileAttachmentService;
 
 @RestController
 public class FileAttachmentController {
+	
+	@Value("${file.maxSize}")
+	private String maxFileSizeAllowed;
 	 
 	@Autowired
 	private FileAttachmentService fileService;
@@ -46,6 +50,11 @@ public class FileAttachmentController {
 		}
 		else 
 			return "Unable to upload the attached file";
+	}
+	
+	@GetMapping("/testConfig")
+	public String getMaxFileSize() {
+		return maxFileSizeAllowed;
 	}
 
 }
